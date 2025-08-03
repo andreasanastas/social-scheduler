@@ -89,7 +89,7 @@ OPENAI_API_KEY=your_openai_api_key
 NODE_ENV=development
 PORT=3000
 LOG_LEVEL=info
-TIMEZONE=America/New_York
+TIMEZONE=Europe/Nicosia
 ```
 
 ### Schedule Configuration
@@ -99,7 +99,7 @@ Create or modify `content/schedule.json`:
 ```json
 {
   "settings": {
-    "timezone": "America/New_York",
+    "timezone": "Europe/Nicosia",
     "retryAttempts": 3,
     "enableNotifications": true
   },
