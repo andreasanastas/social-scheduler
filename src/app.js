@@ -11,6 +11,7 @@ const logger = require('./utils/logger');
 const fileReader = require('./services/file-reader');
 const metaClient = require('./services/meta-client');
 const contentProcessor = require('./services/content-processor');
+const captionGenerator = require('./services/caption-generator');
 const schedulerConfig = require('./config/scheduler');
 const metaApiConfig = require('./config/meta-api');
 const validators = require('./utils/validators');
@@ -149,7 +150,8 @@ class SocialSchedulerApp {
     this.healthStatus.services = {
       metaClient: 'initializing',
       fileReader: 'initializing',
-      contentProcessor: 'initializing'
+      contentProcessor: 'initializing',
+      captionGenerator: 'initializing'
     };
     
     try {
@@ -189,6 +191,26 @@ class SocialSchedulerApp {
     // Content processor is always available
     this.healthStatus.services.contentProcessor = 'healthy';
     logger.info('Content processor service initialized');
+
+    // Test caption generator (OpenAI)
+    try {
+      if (process.env.OPENAI_API_KEY) {
+        const openaiValid = await captionGenerator.testConnection();
+        this.healthStatus.services.captionGenerator = openaiValid ? 'healthy' : 'error';
+        
+        if (openaiValid) {
+          logger.info('OpenAI caption generator initialized');
+        } else {
+          logger.warn('OpenAI connection test failed');
+        }
+      } else {
+        this.healthStatus.services.captionGenerator = 'disabled';
+        logger.info('Caption generator disabled (no OpenAI API key)');
+      }
+    } catch (error) {
+      logger.error('Caption generator initialization failed:', error);
+      this.healthStatus.services.captionGenerator = 'error';
+    }
   }
 
   async loadScheduleConfig() {
@@ -334,12 +356,46 @@ class SocialSchedulerApp {
         content = fileData.content;
       }
       
-      // Process content for each platform
-      const processedContent = await contentProcessor.processContent(
-        content,
-        postConfig.images || [],
-        postConfig.platforms
-      );
+      // Handle auto-caption generation
+      let processedContent;
+      if (postConfig.generateCaption && (!content || content.trim() === '')) {
+        logger.info('Generating auto-caption for post', { jobId, postId: postConfig.id });
+        
+        try {
+          processedContent = await contentProcessor.processContentWithAutoCaption(
+            postConfig.images || [],
+            postConfig.platforms,
+            postConfig.metadata || {}
+          );
+          
+          logger.info('Auto-caption generated successfully', { 
+            jobId, 
+            postId: postConfig.id,
+            captionLength: processedContent.facebook?.content?.length || 0
+          });
+          
+        } catch (error) {
+          logger.error('Auto-caption generation failed, using empty content', { 
+            jobId, 
+            postId: postConfig.id, 
+            error: error.message 
+          });
+          
+          // Fallback to regular processing with empty content
+          processedContent = await contentProcessor.processContent(
+            '',
+            postConfig.images || [],
+            postConfig.platforms
+          );
+        }
+      } else {
+        // Process content normally
+        processedContent = await contentProcessor.processContent(
+          content,
+          postConfig.images || [],
+          postConfig.platforms
+        );
+      }
       
       // Post to each platform
       const results = {};

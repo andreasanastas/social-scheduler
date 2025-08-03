@@ -88,6 +88,36 @@
       "images": ["content/images/thank_you.jpg"],
       "priority": "high",
       "tags": ["gratitude", "community", "year_end"]
+    },
+    {
+      "id": "alumni_class_photo_auto_caption",
+      "generateCaption": true,
+      "metadata": {
+        "year": "early 1980s",
+        "event": "class photograph",
+        "location": "main hall"
+      },
+      "platforms": ["facebook", "instagram"],
+      "scheduledTime": "2024-12-31T10:00:00",
+      "timezone": "America/New_York",
+      "images": ["content/images/class_photo_1980s.jpg"],
+      "priority": "normal",
+      "tags": ["alumni", "throwback", "memories"]
+    },
+    {
+      "id": "sports_day_memories",
+      "generateCaption": true,
+      "metadata": {
+        "year": "1950s",
+        "event": "sports day",
+        "location": "school grounds"
+      },
+      "platforms": ["facebook", "instagram"],
+      "scheduledTime": "2025-01-02T14:00:00",
+      "timezone": "America/New_York",
+      "images": ["content/images/sports_day_1950s.jpg"],
+      "priority": "normal",
+      "tags": ["alumni", "sports", "vintage"]
     }
   ],
   "recurring": [

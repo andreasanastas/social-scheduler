@@ -2,6 +2,7 @@ const sharp = require('sharp');
 const path = require('path');
 const fs = require('fs').promises;
 const logger = require('../config/logger');
+const captionGenerator = require('./caption-generator');
 
 class ContentProcessor {
   constructor() {
@@ -38,7 +39,7 @@ class ContentProcessor {
     }
   }
 
-  async processContent(content, imagePaths = [], platforms = ['facebook', 'instagram']) {
+  async processContent(content, imagePaths = [], platforms = ['facebook', 'instagram'], options = {}) {
     try {
       logger.info('Processing content for platforms:', platforms);
 
@@ -48,7 +49,8 @@ class ContentProcessor {
         const platformContent = await this.processPlatformContent(
           content,
           imagePaths,
-          platform
+          platform,
+          options
         );
         processedContent[platform] = platformContent;
       }
@@ -60,7 +62,7 @@ class ContentProcessor {
     }
   }
 
-  async processPlatformContent(content, imagePaths, platform) {
+  async processPlatformContent(content, imagePaths, platform, options = {}) {
     try {
       // Validate platform
       if (!this.platformLimits[platform]) {
@@ -68,9 +70,25 @@ class ContentProcessor {
       }
 
       const limits = this.platformLimits[platform];
+      let processedText = content;
+
+      // Generate caption if requested and no content provided
+      if (options.generateCaption && (!content || content.trim() === '') && imagePaths.length > 0) {
+        try {
+          logger.info('Generating caption for content', { platform, imagePath: imagePaths[0] });
+          processedText = await captionGenerator.generateCaption(imagePaths[0], options.captionMetadata || {});
+          if (processedText.caption) {
+            processedText = processedText.caption;
+          }
+          logger.info('Caption generated successfully', { platform, length: processedText.length });
+        } catch (error) {
+          logger.warn('Caption generation failed, using empty content', { platform, error: error.message });
+          processedText = content || '';
+        }
+      }
 
       // Process text content
-      const processedText = this.processTextContent(content, platform);
+      processedText = this.processTextContent(processedText, platform);
       
       // Validate text length
       this.validateTextLength(processedText, platform);
@@ -374,6 +392,59 @@ class ContentProcessor {
 
   getAllPlatformLimits() {
     return this.platformLimits;
+  }
+
+  // Caption generation methods
+  async generateCaption(imagePath, metadata = {}) {
+    try {
+      return await captionGenerator.generateCaption(imagePath, metadata);
+    } catch (error) {
+      logger.error('Caption generation failed:', error);
+      throw error;
+    }
+  }
+
+  async batchGenerateCaptions(imagesDir, outputDir = 'content/captions', metadataMap = {}) {
+    try {
+      return await captionGenerator.batchGenerateCaptions(imagesDir, outputDir, metadataMap);
+    } catch (error) {
+      logger.error('Batch caption generation failed:', error);
+      throw error;
+    }
+  }
+
+  async processContentWithAutoCaption(imagePaths, platforms, metadata = {}) {
+    try {
+      if (!imagePaths || imagePaths.length === 0) {
+        throw new Error('At least one image is required for auto-caption generation');
+      }
+
+      // Generate caption from the first image
+      const captionResult = await captionGenerator.generateCaption(imagePaths[0], metadata);
+      const generatedContent = captionResult.caption || captionResult;
+
+      // Process the generated content
+      const processedContent = await this.processContent(
+        generatedContent,
+        imagePaths,
+        platforms,
+        { generateCaption: false } // Don't generate again
+      );
+
+      return {
+        ...processedContent,
+        generatedCaption: true,
+        captionMetadata: captionResult.metadata
+      };
+
+    } catch (error) {
+      logger.error('Auto-caption content processing failed:', error);
+      throw error;
+    }
+  }
+
+  estimateCaptionCosts(imageCount) {
+    return captionGenerator.estimateCost(imageCount);
   }
 }
 

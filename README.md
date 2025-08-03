@@ -5,6 +5,8 @@ A Node.js application for scheduling and automating social media posts to Facebo
 ## Features
 
 - 📅 **Smart Scheduling**: Schedule posts using cron expressions or specific dates with timezone support
+- 🤖 **AI-Powered Captions**: Automatic caption generation using OpenAI for alumni photos and events
+- 🎯 **Intelligent Schedule Generation**: AI-driven natural posting schedules from image directories
 - 🖼️ **Content Processing**: Automatic content optimization for Facebook and Instagram
 - 📱 **Meta Integration**: Direct posting to Facebook Pages and Instagram via Graph API
 - 📝 **Comprehensive Logging**: Detailed logging with daily rotation and multiple log streams
@@ -28,12 +30,16 @@ social-scheduler/
 │   │   ├── meta-api.js      # Meta API endpoints, limits, and error codes
 │   │   └── scheduler.js     # Scheduler settings and cron patterns
 │   ├── services/
-│   │   ├── content-processor.js  # Content optimization and validation
-│   │   ├── file-reader.js        # File and schedule configuration reading
-│   │   └── meta-client.js        # Facebook & Instagram API client
+│   │   ├── caption-generator.js   # OpenAI-powered caption generation
+│   │   ├── content-processor.js   # Content optimization and validation
+│   │   ├── file-reader.js         # File and schedule configuration reading
+│   │   ├── meta-client.js         # Facebook & Instagram API client
+│   │   └── schedule-generator.js  # AI-driven schedule generation
 │   └── utils/
-│       ├── logger.js        # Winston logging with daily rotation
-│       └── validators.js    # Comprehensive validation utilities
+│       ├── batch-caption.js       # Batch caption generation utility
+│       ├── generate-schedule.js   # Schedule generation CLI tool
+│       ├── logger.js              # Winston logging with daily rotation
+│       └── validators.js          # Comprehensive validation utilities
 ├── content/
 │   ├── posts/               # Text content files (.txt, .md, .json)
 │   ├── images/              # Image files for posting
@@ -76,6 +82,9 @@ FACEBOOK_ACCESS_TOKEN=your_page_access_token
 FACEBOOK_PAGE_ID=your_facebook_page_id
 INSTAGRAM_ACCESS_TOKEN=your_instagram_access_token
 
+# OpenAI Integration (for AI features)
+OPENAI_API_KEY=your_openai_api_key
+
 # Application Settings
 NODE_ENV=development
 PORT=3000
@@ -102,6 +111,18 @@ Create or modify `content/schedule.json`:
       "scheduledTime": "2024-12-15T09:00:00",
       "images": ["content/images/morning.jpg"],
       "priority": "high"
+    },
+    {
+      "id": "alumni_auto_caption",
+      "generateCaption": true,
+      "metadata": {
+        "year": "1985",
+        "event": "class photograph",
+        "location": "main hall"
+      },
+      "platforms": ["facebook", "instagram"],
+      "scheduledTime": "2024-12-16T14:30:00",
+      "images": ["content/images/class_1985.jpg"]
     }
   ]
 }
@@ -130,11 +151,38 @@ The application provides several HTTP endpoints:
 - **`http://localhost:3000/status`** - Detailed application state
 - **`http://localhost:3000/metrics`** - Performance metrics
 
+### AI Features
+
+#### Generate Captions for Existing Content
+```bash
+# Interactive caption generation
+npm run batch-caption
+
+# Generate captions for all images in schedule
+npm run batch-caption:schedule
+
+# Generate with configuration file
+npm run batch-caption:config
+```
+
+#### Auto-Generate Posting Schedules
+```bash
+# Interactive schedule generation
+npm run generate-schedule
+
+# Automated generation with defaults
+npm run generate-schedule:auto
+
+# Preview what would be generated
+npm run generate-schedule:dry-run
+```
+
 ### Content Management
 
 1. **Text Content**: Place `.txt` or `.md` files in `content/posts/`
 2. **Images**: Place image files in `content/images/`
 3. **Scheduling**: Configure posts in `content/schedule.json`
+4. **AI Generation**: Use npm scripts for automated caption and schedule creation
 
 ### Example Content Files
 
@@ -158,8 +206,21 @@ The application provides several HTTP endpoints:
 - Rate limiting and error handling
 - Image upload and post publishing
 
+### Caption Generator (`src/services/caption-generator.js`)
+- OpenAI GPT-4o-mini integration for alumni-focused captions
+- Contextual metadata processing for school events
+- Batch processing with cost estimation
+- Smart content optimization for social media
+
+### Schedule Generator (`src/services/schedule-generator.js`)
+- AI-powered natural posting schedule creation
+- Intelligent time distribution (10am-8pm constraint)
+- Metadata extraction from image filenames
+- Cost estimation and validation safeguards
+
 ### Content Processor (`src/services/content-processor.js`)
 - Platform-specific content optimization
+- Auto-caption integration
 - Image processing and validation
 - Hashtag and mention handling
 - Text length and format validation
@@ -181,6 +242,7 @@ The application provides several HTTP endpoints:
 - Content and image validation
 - DateTime and timezone validation
 - Meta API response validation
+- AI generation option validation
 
 ## Platform Specifications
 
@@ -215,8 +277,9 @@ Log files are compressed after rotation and kept for 14 days.
 
 1. **New Platforms**: Extend `meta-client.js` with new API integrations
 2. **Content Types**: Add processors to `content-processor.js`
-3. **Validators**: Add validation rules to `validators.js`
-4. **Scheduling**: Modify cron patterns in `config/scheduler.js`
+3. **AI Features**: Enhance `caption-generator.js` or `schedule-generator.js`
+4. **Validators**: Add validation rules to `validators.js`
+5. **Scheduling**: Modify cron patterns in `config/scheduler.js`
 
 ### Configuration Files
 

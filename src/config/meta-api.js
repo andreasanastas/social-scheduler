@@ -14,6 +14,30 @@ module.exports = {
     }
   },
 
+  // OpenAI Configuration
+  openai: {
+    model: 'gpt-4o-mini',
+    maxTokens: 300,
+    temperature: 0.7,
+    timeout: 60000, // 1 minute
+    rateLimitDelay: 1000, // 1 second between requests
+    
+    // Cost estimation (approximate)
+    pricing: {
+      inputCostPer1000: 0.00015, // $0.00015 per 1K input tokens
+      outputCostPer1000: 0.0006, // $0.0006 per 1K output tokens
+      avgTokensPerRequest: 250
+    },
+    
+    // Retry configuration for OpenAI
+    retry: {
+      maxAttempts: 3,
+      baseDelay: 2000, // 2 seconds
+      maxDelay: 30000, // 30 seconds
+      backoffMultiplier: 2
+    }
+  },
+
   // Endpoints
   endpoints: {
     facebook: {

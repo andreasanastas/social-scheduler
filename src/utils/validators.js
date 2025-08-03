@@ -538,6 +538,212 @@ class Validators {
   getAllPlatformLimits() {
     return this.platformLimits;
   }
+
+  // Schedule generation validation
+  validateScheduleGeneration(options) {
+    const errors = [];
+    const warnings = [];
+
+    // Image count validation
+    if (options.imageCount > 100) {
+      errors.push(`Too many images (${options.imageCount}). Maximum allowed: 100`);
+    }
+
+    if (options.imageCount < 1) {
+      errors.push('At least one image is required');
+    }
+
+    // Frequency validation
+    if (options.frequency && (options.frequency < 1 || options.frequency > 14)) {
+      errors.push('Frequency must be between 1 and 14 posts per week');
+    }
+
+    if (options.frequency > 7) {
+      warnings.push('High frequency (>7 posts/week) may overwhelm your audience');
+    }
+
+    // Start date validation
+    if (options.startDate) {
+      const startMoment = moment(options.startDate);
+      if (!startMoment.isValid()) {
+        errors.push('Invalid start date format. Use YYYY-MM-DD');
+      } else {
+        if (startMoment.isBefore(moment().subtract(1, 'day'))) {
+          errors.push('Start date cannot be in the past');
+        }
+        if (startMoment.isAfter(moment().add(2, 'years'))) {
+          warnings.push('Start date is more than 2 years in the future');
+        }
+      }
+    }
+
+    // Timezone validation
+    if (options.timezone && !moment.tz.names().includes(options.timezone)) {
+      errors.push(`Invalid timezone: ${options.timezone}`);
+    }
+
+    // Platform validation
+    if (options.platforms && Array.isArray(options.platforms)) {
+      const validPlatforms = ['facebook', 'instagram'];
+      const invalidPlatforms = options.platforms.filter(p => !validPlatforms.includes(p));
+      if (invalidPlatforms.length > 0) {
+        errors.push(`Invalid platforms: ${invalidPlatforms.join(', ')}`);
+      }
+    }
+
+    // Duration estimation and warnings
+    if (options.imageCount && options.frequency) {
+      const estimatedWeeks = Math.ceil(options.imageCount / options.frequency);
+      if (estimatedWeeks > 52) {
+        warnings.push(`Schedule spans ${estimatedWeeks} weeks (>1 year). Consider increasing frequency`);
+      }
+      if (estimatedWeeks < 2) {
+        warnings.push('Very short schedule duration. Consider decreasing frequency for better engagement');
+      }
+    }
+
+    return {
+      isValid: errors.length === 0,
+      errors,
+      warnings
+    };
+  }
+
+  // Validate posting time constraints
+  validatePostingTime(dateTime, timezone = 'UTC') {
+    const errors = [];
+    const warnings = [];
+
+    const postMoment = moment.tz(dateTime, timezone);
+    if (!postMoment.isValid()) {
+      return {
+        isValid: false,
+        errors: ['Invalid datetime'],
+        warnings: []
+      };
+    }
+
+    const hour = postMoment.hour();
+    const dayOfWeek = postMoment.day(); // 0 = Sunday, 6 = Saturday
+
+    // Enforce 10am-8pm constraint
+    if (hour < 10 || hour >= 20) {
+      errors.push(`Posting time ${postMoment.format('h:mm A')} is outside allowed hours (10am-8pm)`);
+    }
+
+    // Social media best practices warnings
+    if (hour >= 12 && hour <= 14) {
+      // Lunch time - good for engagement
+    } else if (hour >= 18 && hour <= 20) {
+      // Evening - good for engagement
+    } else if (hour >= 10 && hour <= 12) {
+      // Morning - decent engagement
+    } else if (hour >= 14 && hour <= 18) {
+      warnings.push('Afternoon posting may have lower engagement');
+    }
+
+    // Weekend vs weekday considerations
+    if (dayOfWeek === 0 || dayOfWeek === 6) {
+      warnings.push('Weekend posts may have different engagement patterns');
+    }
+
+    return {
+      isValid: errors.length === 0,
+      errors,
+      warnings
+    };
+  }
+
+  // Validate image directory for schedule generation
+  async validateImageDirectory(imagesDir) {
+    const errors = [];
+    const warnings = [];
+
+    try {
+      const fs = require('fs').promises;
+      const path = require('path');
+
+      // Check if directory exists
+      const stats = await fs.stat(imagesDir);
+      if (!stats.isDirectory()) {
+        errors.push('Images path is not a directory');
+        return { isValid: false, errors, warnings };
+      }
+
+      // Check for images
+      const files = await fs.readdir(imagesDir);
+      const supportedFormats = ['.jpg', '.jpeg', '.png', '.gif', '.webp'];
+      const imageFiles = files.filter(file => 
+        supportedFormats.includes(path.extname(file).toLowerCase())
+      );
+
+      if (imageFiles.length === 0) {
+        errors.push('No supported image files found in directory');
+      } else if (imageFiles.length > 100) {
+        errors.push(`Too many images (${imageFiles.length}). Maximum: 100`);
+      } else if (imageFiles.length > 50) {
+        warnings.push(`Large number of images (${imageFiles.length}). Consider processing in batches`);
+      }
+
+      // Check for common issues
+      const potentialIssues = files.filter(file => {
+        const ext = path.extname(file).toLowerCase();
+        return ['.tiff', '.bmp', '.svg', '.raw'].includes(ext);
+      });
+
+      if (potentialIssues.length > 0) {
+        warnings.push(`Found ${potentialIssues.length} files with unsupported formats`);
+      }
+
+      return {
+        isValid: errors.length === 0,
+        errors,
+        warnings,
+        imageCount: imageFiles.length,
+        supportedImages: imageFiles,
+        unsupportedFiles: potentialIssues
+      };
+
+    } catch (error) {
+      errors.push(`Cannot access directory: ${error.message}`);
+      return { isValid: false, errors, warnings };
+    }
+  }
+
+  // Validate complete schedule generation request
+  async validateScheduleGenerationRequest(options) {
+    const allErrors = [];
+    const allWarnings = [];
+
+    // Validate basic options
+    const basicValidation = this.validateScheduleGeneration(options);
+    allErrors.push(...basicValidation.errors);
+    allWarnings.push(...basicValidation.warnings);
+
+    // Validate image directory if provided
+    if (options.imagesDir) {
+      const dirValidation = await this.validateImageDirectory(options.imagesDir);
+      allErrors.push(...dirValidation.errors);
+      allWarnings.push(...dirValidation.warnings);
+      
+      if (dirValidation.isValid) {
+        // Update options with actual image count
+        options.imageCount = dirValidation.imageCount;
+        
+        // Re-validate with actual image count
+        const countValidation = this.validateScheduleGeneration(options);
+        allErrors.push(...countValidation.errors);
+        allWarnings.push(...countValidation.warnings);
+      }
+    }
+
+    return {
+      isValid: allErrors.length === 0,
+      errors: [...new Set(allErrors)], // Remove duplicates
+      warnings: [...new Set(allWarnings)],
+      imageCount: options.imageCount
+    };
+  }
 }
 
 module.exports = new Validators();
