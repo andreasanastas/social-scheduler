@@ -1,0 +1,165 @@
+{
+  "settings": {
+    "timezone": "America/New_York",
+    "retryAttempts": 3,
+    "retryDelay": 30000,
+    "enableNotifications": true,
+    "logLevel": "info"
+  },
+  "posts": [
+    {
+      "id": "product_announcement",
+      "content": "🚀 Excited to share our latest product update!\n\nWe've been working hard behind the scenes to bring you some amazing new features that will transform how you manage your social media presence.\n\n✨ What's new:\n• Advanced scheduling with timezone support\n• Automated image optimization\n• Cross-platform posting\n• Detailed analytics and insights\n\nReady to take your social media to the next level?\n\n#SocialMediaManagement #ProductUpdate #Innovation #SmallBusiness",
+      "platforms": ["facebook", "instagram"],
+      "scheduledTime": "2024-12-15T09:00:00",
+      "timezone": "America/New_York",
+      "images": ["content/images/sample_image.jpg"],
+      "priority": "high",
+      "tags": ["product", "announcement", "marketing"]
+    },
+    {
+      "id": "summer_sale",
+      "file": "content/posts/marketing_post.md",
+      "platforms": ["facebook", "instagram"],
+      "scheduledTime": "2024-12-16T13:00:00",
+      "timezone": "America/New_York", 
+      "images": ["content/images/product_update.png"],
+      "priority": "high",
+      "tags": ["sale", "marketing", "promotion"]
+    },
+    {
+      "id": "behind_scenes_post",
+      "file": "content/posts/behind_scenes.txt",
+      "platforms": ["instagram"],
+      "scheduledTime": "2024-12-17T17:00:00",
+      "timezone": "America/New_York",
+      "images": ["content/images/behind_scenes.jpg"],
+      "priority": "normal",
+      "tags": ["behind_scenes", "team", "culture"]
+    },
+    {
+      "id": "text_only_facebook",
+      "content": "Quick update: Our customer support team is available 24/7 to help with any questions you might have about our platform. Don't hesitate to reach out!\n\n#CustomerSupport #Help #AlwaysHere",
+      "platforms": ["facebook"],
+      "scheduledTime": "2024-12-18T11:30:00",
+      "timezone": "America/New_York",
+      "priority": "normal",
+      "tags": ["support", "customer_service"]
+    },
+    {
+      "id": "multi_image_post",
+      "content": "Check out our workspace evolution over the past year! 📸\n\nFrom a small corner office to our current amazing headquarters. Growth has been incredible and we're just getting started!\n\n#WorkspaceEvolution #Growth #Team #Startup #Journey",
+      "platforms": ["instagram"],
+      "scheduledTime": "2024-12-19T15:45:00",
+      "timezone": "America/New_York",
+      "images": [
+        "content/images/office_before.jpg",
+        "content/images/office_current.jpg"
+      ],
+      "priority": "normal",
+      "tags": ["growth", "workspace", "journey"]
+    },
+    {
+      "id": "weekend_motivation",
+      "content": "Weekend motivation 💪\n\n'Success is not final, failure is not fatal: it is the courage to continue that counts.' - Winston Churchill\n\nWhatever you're working on this weekend, keep pushing forward. Every small step counts!\n\n#WeekendMotivation #Success #Persistence #KeepGoing #Inspiration",
+      "platforms": ["facebook", "instagram"],
+      "scheduledTime": "2024-12-21T10:00:00",
+      "timezone": "America/New_York",
+      "images": ["content/images/motivation_quote.jpg"],
+      "priority": "low",
+      "tags": ["motivation", "weekend", "inspiration"]
+    },
+    {
+      "id": "feature_highlight",
+      "content": "💡 Feature Highlight: Auto-scheduling\n\nDid you know our platform can automatically schedule your posts at optimal times based on your audience engagement patterns?\n\n✅ Saves time\n✅ Increases engagement\n✅ Consistent posting\n✅ Better reach\n\nTry it out and let us know what you think!\n\n#FeatureHighlight #AutoScheduling #SocialMediaTips #Engagement",
+      "platforms": ["facebook", "instagram"],
+      "scheduledTime": "2024-12-22T14:15:00",
+      "timezone": "America/New_York",
+      "images": ["content/images/feature_highlight.png"],
+      "priority": "normal",
+      "tags": ["features", "tips", "automation"]
+    },
+    {
+      "id": "year_end_thanks",
+      "content": "As we approach the end of the year, we want to take a moment to thank our amazing community! 🙏\n\nYour feedback, support, and enthusiasm have driven us to build better features and improve our platform every day.\n\nHere's to an incredible 2024 and an even better 2025! 🎉\n\n#ThankYou #Community #YearEnd #Grateful #2024Recap #LookingForward",
+      "platforms": ["facebook", "instagram"],
+      "scheduledTime": "2024-12-30T16:00:00",
+      "timezone": "America/New_York",
+      "images": ["content/images/thank_you.jpg"],
+      "priority": "high",
+      "tags": ["gratitude", "community", "year_end"]
+    }
+  ],
+  "recurring": [
+    {
+      "id": "weekly_tips",
+      "content": "💡 Weekly Tip: {tip_content}\n\nStay tuned every Monday for more social media tips and tricks!\n\n#WeeklyTips #SocialMediaTips #MondayMotivation",
+      "platforms": ["facebook", "instagram"],
+      "cronPattern": "0 9 * * 1",
+      "timezone": "America/New_York",
+      "priority": "normal",
+      "tags": ["tips", "weekly", "educational"],
+      "variables": {
+        "tip_content": [
+          "Post consistently to maintain audience engagement",
+          "Use high-quality images for better visual appeal",
+          "Engage with your audience through comments and messages",
+          "Analyze your metrics to understand what content works best",
+          "Use relevant hashtags to increase discoverability"
+        ]
+      }
+    },
+    {
+      "id": "friday_features",
+      "content": "🚀 Feature Friday!\n\nToday we're highlighting: {feature_name}\n\n{feature_description}\n\nHave you tried this feature yet? Let us know in the comments!\n\n#FeatureFriday #ProductUpdate #UserTips",
+      "platforms": ["facebook", "instagram"],
+      "cronPattern": "0 14 * * 5",
+      "timezone": "America/New_York",
+      "priority": "normal",
+      "tags": ["features", "friday", "product"],
+      "variables": {
+        "feature_name": [
+          "Bulk Upload",
+          "Analytics Dashboard", 
+          "Auto-Optimization",
+          "Team Collaboration",
+          "Content Calendar"
+        ],
+        "feature_description": [
+          "Upload multiple posts at once and schedule them efficiently",
+          "Get detailed insights into your social media performance",
+          "Automatically optimize your content for each platform",
+          "Work together with your team on social media campaigns",
+          "Visualize and plan your content strategy with our calendar view"
+        ]
+      }
+    }
+  ],
+  "templates": {
+    "product_announcement": {
+      "content": "🚀 New Feature Alert!\n\n{feature_name} is now live!\n\n{feature_description}\n\n✨ Benefits:\n{benefits}\n\nReady to try it out? {call_to_action}\n\n#ProductUpdate #NewFeature #Innovation",
+      "platforms": ["facebook", "instagram"],
+      "priority": "high",
+      "tags": ["product", "announcement", "features"]
+    },
+    "user_testimonial": {
+      "content": "📣 Customer Spotlight!\n\n\"{testimonial_text}\" - {customer_name}, {customer_title}\n\nWe love hearing from our amazing customers! Share your success story with us.\n\n#CustomerSpotlight #Testimonial #Success",
+      "platforms": ["facebook", "instagram"],
+      "priority": "normal",
+      "tags": ["testimonial", "customer", "social_proof"]
+    },
+    "blog_promotion": {
+      "content": "📖 New Blog Post!\n\n{blog_title}\n\n{blog_summary}\n\nRead the full article: {blog_link}\n\n#Blog #NewPost #Knowledge #Learning",
+      "platforms": ["facebook", "instagram"],
+      "priority": "normal",
+      "tags": ["blog", "content", "education"]
+    }
+  },
+  "metadata": {
+    "version": "1.0",
+    "created": "2024-12-14T00:00:00Z",
+    "lastModified": "2024-12-14T00:00:00Z",
+    "author": "Social Scheduler",
+    "description": "Example schedule configuration demonstrating various post types and scheduling options"
+  }
+}
